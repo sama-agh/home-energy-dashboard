@@ -1,0 +1,166 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>نظام مراقبة الطاقة المنزلية</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Tahoma', sans-serif;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+        .sidebar {
+            width: 220px;
+            height: 100vh;
+            background-color: #f1f3f5;
+            position: fixed;
+            top: 0;
+            right: 0;
+            padding: 20px;
+            box-shadow: -1px 0 5px rgba(0,0,0,0.1);
+        }
+        .sidebar h2 {
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+        }
+        .sidebar ul li {
+            padding: 10px 0;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .main {
+            margin-right: 240px;
+            padding: 20px;
+        }
+        .card {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 0 8px rgba(0,0,0,0.05);
+        }
+        .card h3 {
+            margin-top: 0;
+        }
+        .toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+        .toggle label {
+            font-size: 16px;
+        }
+        .toggle input {
+            width: 40px;
+            height: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h2>نظام مراقبة الطاقة المنزلية</h2>
+        <ul>
+            <li>لوحة التحكم</li>
+            <li>استهلاك الطاقة</li>
+            <li>التنبيهات</li>
+            <li>الأجهزة</li>
+            <li>الإعدادات</li>
+        </ul>
+    </div>
+
+    <div class="main">
+        <div class="card">
+            <h3>استهلاكك الحالي للطاقة</h3>
+            <p style="font-size: 24px;"><strong id="usage">2.35</strong> kW</p>
+            <p>مقارنة مع الأيام السابقة</p>
+            <canvas id="usageChart" width="600" height="200"></canvas>
+        </div>
+
+        <div class="card">
+            <h3>التنبيهات</h3>
+            <p id="alertMessage" style="color: #d97706;">استهلاكك مرتفع للطاقة</p>
+        </div>
+
+        <div class="card">
+            <h3>الأجهزة</h3>
+            <div class="toggle">
+                <label for="ac">مكيف الهواء</label>
+                <input type="checkbox" id="ac" checked>
+            </div>
+            <div class="toggle">
+                <label for="heater">سخان الماء</label>
+                <input type="checkbox" id="heater">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const ctx = document.getElementById('usageChart').getContext('2d');
+        const usageChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['الجمعة', 'الخميس', 'الأربعاء', 'الثلاثاء', 'الإثنين'],
+                datasets: [{
+                    label: 'الاستهلاك (kW)',
+                    data: [2.0, 2.3, 2.1, 2.5, 2.35],
+                    backgroundColor: 'rgba(52, 152, 219, 0.2)',
+                    borderColor: 'rgba(41, 128, 185,1.0)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        const usageDisplay = document.getElementById('usage');
+        const alertMessage = document.getElementById('alertMessage');
+
+        document.getElementById('ac').addEventListener('change', updateUsage);
+        document.getElementById('heater').addEventListener('change', updateUsage);
+
+        function updateUsage() {
+            let usage = 0;
+            if (document.getElementById('ac').checked) usage += 1.2;
+            if (document.getElementById('heater').checked) usage += 1.5;
+
+            usage = (2.0 + usage).toFixed(2);
+            usageDisplay.textContent = usage;
+
+            usageChart.data.datasets[0].data[0] = parseFloat(usage);
+            usageChart.update();
+
+            if (usage > 3.5) {
+                alertMessage.textContent = "تحذير: استهلاك مرتفع جدًا!";
+                alertMessage.style.color = "#e63946";
+            } else if (usage > 2.8) {
+                alertMessage.textContent = "استهلاكك مرتفع للطاقة";
+                alertMessage.style.color = "#d97706";
+            } else {
+                alertMessage.textContent = "استهلاكك طبيعي";
+                alertMessage.style.color = "#16a34a";
+            }
+        }
+    </script>
+</body>
+</html>
